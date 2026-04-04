@@ -16,6 +16,9 @@ public class Customer {
     private String email;
     private String phone;
 
+    @Column(columnDefinition = "double default 0.0")
+    private Double discountPercentage = 0.0;
+
     private LocalDateTime createdAt = LocalDateTime.now();
 
     public Customer() {}
@@ -30,4 +33,6 @@ public class Customer {
     public void setPhone(String phone) { this.phone = phone; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public Double getDiscountPercentage() { return discountPercentage; }
+    public void setDiscountPercentage(Double discountPercentage) { this.discountPercentage = discountPercentage; }
 }

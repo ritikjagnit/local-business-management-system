@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import LandingPage from './pages/LandingPage';
 
 import Products from './pages/Products';
 import Customers from './pages/Customers';
@@ -13,9 +14,10 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Dashboard />} />
+        <Route element={<Layout />}>
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="sales" element={<Sales />} />
           <Route path="products" element={<Products />} />
           <Route path="customers" element={<Customers />} />

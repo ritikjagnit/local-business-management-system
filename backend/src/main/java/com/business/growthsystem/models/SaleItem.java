@@ -25,6 +25,9 @@ public class SaleItem {
     @Column(nullable = false)
     private Double priceAtSale;
 
+    @Column(columnDefinition = "double default 0.0")
+    private Double taxAmountAtSale = 0.0;
+
     public SaleItem() {}
 
     public Long getId() { return id; }
@@ -37,4 +40,6 @@ public class SaleItem {
     public void setQuantity(Integer quantity) { this.quantity = quantity; }
     public Double getPriceAtSale() { return priceAtSale; }
     public void setPriceAtSale(Double priceAtSale) { this.priceAtSale = priceAtSale; }
+    public Double getTaxAmountAtSale() { return taxAmountAtSale; }
+    public void setTaxAmountAtSale(Double taxAmountAtSale) { this.taxAmountAtSale = taxAmountAtSale; }
 }

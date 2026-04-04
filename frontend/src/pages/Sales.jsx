@@ -43,9 +43,20 @@ export default function Sales() {
       return item;
     }).filter(Boolean));
   };
+  const getPhoneDiscountPercentage = () => {
+    if (!customerInfo.phone || customerInfo.phone.length < 5) return 0;
+    let hash = 0;
+    for (let i = 0; i < customerInfo.phone.length; i++) {
+        hash = customerInfo.phone.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return (Math.abs(hash) % 15) + 5; // Yields stable 5% to 19%
+  };
 
-  const calculateTotal = () => cart.reduce((sum, item) => sum + (item.priceAtSale * item.quantity), 0);
-
+  const calculateTotalPreTax = () => cart.reduce((sum, item) => sum + (item.priceAtSale * item.quantity), 0);
+  const calculateTotalTax = () => cart.reduce((sum, item) => sum + (item.priceAtSale * item.quantity * (item.product.gstPercentage || 0) / 100), 0);
+  const getSubtotal = () => calculateTotalPreTax() + calculateTotalTax();
+  const getDiscountAmount = () => (getSubtotal() * getPhoneDiscountPercentage()) / 100;
+  const calculateTotal = () => getSubtotal() - getDiscountAmount();
   const generateReceiptPDF = (customerName, total) => {
     const doc = new jsPDF();
     doc.setFont("helvetica", "bold");
@@ -74,18 +85,44 @@ export default function Sales() {
     cart.forEach(item => {
       doc.text(item.product.name, 20, y);
       doc.text(item.quantity.toString(), 120, y);
-      doc.text(`$${item.priceAtSale.toFixed(2)}`, 150, y);
-      doc.text(`$${(item.priceAtSale * item.quantity).toFixed(2)}`, 190, y, { align: "right" });
+      doc.text(`₹${item.priceAtSale.toFixed(2)}`, 150, y);
+      doc.text(`₹${(item.priceAtSale * item.quantity).toFixed(2)}`, 190, y, { align: "right" });
       y += 10;
     });
 
     doc.line(20, y, 190, y);
     y += 10;
     
+    doc.text("Total Pre-Tax:", 140, y);
+    doc.text(`₹${calculateTotalPreTax().toFixed(2)}`, 190, y, { align: "right" });
+    y += 8;
+    
+    const totalTax = calculateTotalTax();
+    doc.text("CGST:", 140, y);
+    doc.text(`₹${(totalTax / 2).toFixed(2)}`, 190, y, { align: "right" });
+    y += 8;
+    
+    doc.text("SGST:", 140, y);
+    doc.text(`₹${(totalTax / 2).toFixed(2)}`, 190, y, { align: "right" });
+    y += 8;
+
+    const discountPerc = getPhoneDiscountPercentage();
+    if (discountPerc > 0) {
+      doc.text(`Loyalty Discount (${discountPerc}%):`, 140, y);
+      doc.text(`-₹${getDiscountAmount().toFixed(2)}`, 190, y, { align: "right" });
+      y += 8;
+    }
+    
+    doc.text("SGST:", 140, y);
+    doc.text(`₹${(totalTax / 2).toFixed(2)}`, 190, y, { align: "right" });
+    y += 8;
+    
+    doc.line(140, y-4, 190, y-4);
+    
     doc.setFont("helvetica", "bold");
     doc.setFontSize(14);
     doc.text("Grand Total:", 140, y);
-    doc.text(`$${total.toFixed(2)}`, 190, y, { align: "right" });
+    doc.text(`₹${total.toFixed(2)}`, 190, y, { align: "right" });
     
     doc.save(`Receipt_${Date.now()}.pdf`);
   };
@@ -96,7 +133,8 @@ export default function Sales() {
       let customerId = null;
       if (customerInfo.name && customerInfo.phone) {
         try {
-          const custRes = await api.post('/customers', customerInfo);
+          const pld = { ...customerInfo, discountPercentage: getPhoneDiscountPercentage() };
+          const custRes = await api.post('/customers', pld);
           customerId = custRes.data.id;
         } catch(cErr) {
           console.error("Failed to link customer", cErr);
@@ -106,6 +144,8 @@ export default function Sales() {
       const total = calculateTotal();
       const payload = {
         totalAmount: total,
+        totalTax: calculateTotalTax(),
+        discountAmount: getDiscountAmount(),
         items: cart.map(item => ({ product: { id: item.product.id }, quantity: item.quantity, priceAtSale: item.priceAtSale }))
       };
       if (customerId) {
@@ -158,7 +198,7 @@ export default function Sales() {
                 </div>
                 <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 bg-slate-100 w-fit px-2 py-0.5 rounded-md">{p.category}</div>
                 <div className="flex items-end justify-between mt-auto">
-                  <div className="text-2xl font-black text-slate-800">${p.price?.toFixed(2)}</div>
+                  <div className="text-2xl font-black text-slate-800">₹{p.price?.toFixed(2)}</div>
                   <div className={`text-xs font-bold px-2.5 py-1 rounded-md ${p.stockQuantity > 10 ? 'bg-emerald-100 text-emerald-700' : p.stockQuantity > 0 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
                     {p.stockQuantity === 0 ? 'Out of Stock' : `${p.stockQuantity} Left`}
                   </div>
@@ -194,7 +234,7 @@ export default function Sales() {
             <div key={item.product.id} className="flex items-center justify-between bg-white/80 p-4 rounded-2xl border border-slate-200/60 shadow-sm animate-fade-in-up hover:border-indigo-200 transition-all" style={{animationDuration: '0.3s'}}>
               <div className="flex-1 pr-4">
                 <div className="font-bold text-slate-800 line-clamp-1" title={item.product.name}>{item.product.name}</div>
-                <div className="text-sm font-semibold text-indigo-600">${item.priceAtSale?.toFixed(2)}</div>
+                <div className="text-sm font-semibold text-indigo-600">₹{item.priceAtSale?.toFixed(2)}</div>
               </div>
               <div className="flex items-center gap-1 bg-slate-100/50 rounded-xl p-1 border border-slate-200/60">
                 <button onClick={() => updateQuantity(item.product.id, -1)} className="w-8 h-8 flex items-center justify-center rounded-lg bg-white text-slate-600 hover:text-red-600 hover:bg-red-50 shadow-sm transition-all focus:scale-95">
@@ -224,9 +264,15 @@ export default function Sales() {
           </div>
           
           <div className="p-6">
+            {getPhoneDiscountPercentage() > 0 && (
+              <div className="flex justify-between items-end mb-2">
+                <div className="text-emerald-500 font-bold tracking-widest text-[11px] bg-emerald-50 px-2 py-1 rounded-md">Loyalty Discount ({getPhoneDiscountPercentage()}%)</div>
+                <div className="text-emerald-600 font-bold">-₹{getDiscountAmount().toFixed(2)}</div>
+              </div>
+            )}
             <div className="flex justify-between items-end mb-6">
               <div className="text-slate-500 font-bold uppercase tracking-widest text-[11px]">Total Selected</div>
-              <div className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-indigo-900 tracking-tight">${calculateTotal().toFixed(2)}</div>
+              <div className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-indigo-900 tracking-tight">₹{calculateTotal().toFixed(2)}</div>
             </div>
             <button onClick={checkout} disabled={cart.length === 0} className="w-full bg-gradient-to-r from-indigo-600 to-primary-600 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:from-indigo-700 hover:to-primary-700 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-xl hover:shadow-indigo-500/20 transform active:scale-[0.98] transition-all group overflow-hidden relative">
               <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:animate-[shimmer_1s_infinite]"></div>

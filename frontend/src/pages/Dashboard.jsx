@@ -63,7 +63,7 @@ export default function Dashboard() {
           <div className="text-slate-500 font-bold mb-2 uppercase tracking-wider text-[11px] flex items-center justify-between">
             Weekly Revenue <div className="p-2 bg-primary-50 rounded-xl text-primary-600"><TrendingUp size={16}/></div>
           </div>
-          <div className="text-4xl font-black text-slate-800 mb-3 tracking-tight">$12,500</div>
+          <div className="text-4xl font-black text-slate-800 mb-3 tracking-tight">₹12,500</div>
           <div className="text-emerald-600 text-xs font-bold flex items-center gap-1.5 bg-emerald-50 w-fit px-3 py-1.5 rounded-lg border border-emerald-100">
             <TrendingUp size={14} strokeWidth={3} /> +12.5% vs last week
           </div>

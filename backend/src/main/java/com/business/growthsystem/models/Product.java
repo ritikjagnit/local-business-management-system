@@ -22,6 +22,9 @@ public class Product {
     @Column(nullable = false)
     private Integer stockQuantity;
 
+    @Column(columnDefinition = "double default 0.0")
+    private Double gstPercentage = 0.0;
+
     public Product() {}
 
     public Long getId() { return id; }
@@ -36,4 +39,6 @@ public class Product {
     public void setCostPrice(Double costPrice) { this.costPrice = costPrice; }
     public Integer getStockQuantity() { return stockQuantity; }
     public void setStockQuantity(Integer stockQuantity) { this.stockQuantity = stockQuantity; }
+    public Double getGstPercentage() { return gstPercentage; }
+    public void setGstPercentage(Double gstPercentage) { this.gstPercentage = gstPercentage; }
 }

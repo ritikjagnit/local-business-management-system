@@ -18,7 +18,7 @@ export default function Login() {
       const payload = isRegister ? { username, password, role: 'SHOP_OWNER' } : { username, password };
       const res = await axios.post(`http://localhost:8080${endpoint}`, payload);
       Cookies.set('token', res.data.token, { expires: 1 });
-      navigate('/');
+      navigate('/dashboard');
     } catch (err) {
       if (err.response && err.response.status === 403) {
         setError('Authentication blocked. Try creating a new account.');

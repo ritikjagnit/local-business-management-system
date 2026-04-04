@@ -2,8 +2,18 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { LayoutDashboard, Package, Users, ShoppingCart, LogOut, FileText } from 'lucide-react';
 import Cookies from 'js-cookie';
+import { jwtDecode } from 'jwt-decode';
 
 export default function Sidebar() {
+  const token = Cookies.get('token');
+  let role = 'STAFF';
+  try {
+    if (token) {
+      const decoded = jwtDecode(token);
+      role = decoded.role || 'STAFF';
+    }
+  } catch(e) {}
+
   const logout = () => {
     Cookies.remove('token');
     window.location.href = '/login';
@@ -29,18 +39,24 @@ export default function Sidebar() {
       </div>
       
       <nav className="flex-1 space-y-1 relative z-10">
-        <NavLink to="/" className={navClass} end>
-          <LayoutDashboard size={20} className="group-hover:scale-110 transition-transform" /> Dashboard
-        </NavLink>
+        {role === 'ADMIN' && (
+          <NavLink to="/dashboard" className={navClass} end>
+            <LayoutDashboard size={20} className="group-hover:scale-110 transition-transform" /> Dashboard
+          </NavLink>
+        )}
         <NavLink to="/sales" className={navClass}>
           <ShoppingCart size={20} className="group-hover:scale-110 transition-transform" /> Sales / POS
         </NavLink>
-        <NavLink to="/products" className={navClass}>
-          <Package size={20} className="group-hover:scale-110 transition-transform" /> Products
-        </NavLink>
-        <NavLink to="/customers" className={navClass}>
-          <Users size={20} className="group-hover:scale-110 transition-transform" /> Customers
-        </NavLink>
+        {role === 'ADMIN' && (
+          <>
+            <NavLink to="/products" className={navClass}>
+              <Package size={20} className="group-hover:scale-110 transition-transform" /> Products
+            </NavLink>
+            <NavLink to="/customers" className={navClass}>
+              <Users size={20} className="group-hover:scale-110 transition-transform" /> Customers
+            </NavLink>
+          </>
+        )}
         <NavLink to="/orders" className={navClass}>
           <FileText size={20} className="group-hover:scale-110 transition-transform" /> Order History
         </NavLink>

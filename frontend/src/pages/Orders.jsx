@@ -51,8 +51,8 @@ export default function Orders() {
       const productName = item.product?.name || 'Unknown Product';
       doc.text(productName, 20, y);
       doc.text(item.quantity.toString(), 120, y);
-      doc.text(`$${item.priceAtSale.toFixed(2)}`, 150, y);
-      doc.text(`$${(item.priceAtSale * item.quantity).toFixed(2)}`, 190, y, { align: "right" });
+      doc.text(`₹${item.priceAtSale.toFixed(2)}`, 150, y);
+      doc.text(`₹${(item.priceAtSale * item.quantity).toFixed(2)}`, 190, y, { align: "right" });
       y += 10;
     });
 
@@ -62,7 +62,7 @@ export default function Orders() {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(14);
     doc.text("Grand Total:", 140, y);
-    doc.text(`$${sale.totalAmount.toFixed(2)}`, 190, y, { align: "right" });
+    doc.text(`₹${sale.totalAmount.toFixed(2)}`, 190, y, { align: "right" });
     
     doc.save(`Order_${sale.id}_Bill.pdf`);
   };
@@ -134,7 +134,7 @@ export default function Orders() {
                           {sale.items?.length || 0} items
                        </div>
                     </td>
-                    <td className="p-4 font-bold text-indigo-700 text-lg">${sale.totalAmount?.toFixed(2)}</td>
+                    <td className="p-4 font-bold text-indigo-700 text-lg">₹{sale.totalAmount?.toFixed(2)}</td>
                     <td className="p-4">
                       <button 
                         onClick={() => downloadPDF(sale)}

@@ -33,8 +33,10 @@ public class SaleService {
             sale.setDate(LocalDateTime.now());
         }
         
+        double aggregatedTax = 0.0;
+
         if (sale.getItems() != null) {
-            sale.getItems().forEach(item -> {
+            for (com.business.growthsystem.models.SaleItem item : sale.getItems()) {
                 item.setSale(sale);
                 // Deduct stock
                 Product p = productRepository.findById(item.getProduct().getId()).orElseThrow();
@@ -44,8 +46,16 @@ public class SaleService {
                 } else {
                     throw new RuntimeException("Insufficient stock for product " + p.getName());
                 }
-            });
+
+                // Calculate GST Tax
+                double gstPercent = p.getGstPercentage() != null ? p.getGstPercentage() : 0.0;
+                double itemTax = (item.getPriceAtSale() * item.getQuantity()) * (gstPercent / 100.0);
+                item.setTaxAmountAtSale(itemTax);
+                aggregatedTax += itemTax;
+            }
         }
+        
+        sale.setTotalTax(aggregatedTax);
         Sale savedSale = repository.save(sale);
         
         // Broadcast event automatically to frontend

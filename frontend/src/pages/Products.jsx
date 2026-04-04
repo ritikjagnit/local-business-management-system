@@ -10,7 +10,7 @@ export default function Products() {
   const [search, setSearch] = useState('');
   
   const [formData, setFormData] = useState({
-    name: '', category: '', price: '', costPrice: '', stockQuantity: ''
+    name: '', category: '', price: '', costPrice: '', stockQuantity: '', gstPercentage: 0
   });
 
   const fetchProducts = async () => {
@@ -35,7 +35,8 @@ export default function Products() {
         ...formData,
         price: parseFloat(formData.price),
         costPrice: formData.costPrice ? parseFloat(formData.costPrice) : null,
-        stockQuantity: parseInt(formData.stockQuantity, 10)
+        stockQuantity: parseInt(formData.stockQuantity, 10),
+        gstPercentage: parseFloat(formData.gstPercentage || 0)
       };
 
       if (currentId) {
@@ -69,7 +70,7 @@ export default function Products() {
 
   const openNewForm = () => {
     setCurrentId(null);
-    setFormData({ name: '', category: '', price: '', costPrice: '', stockQuantity: '' });
+    setFormData({ name: '', category: '', price: '', costPrice: '', stockQuantity: '', gstPercentage: 0 });
     setShowForm(true);
   };
 
@@ -109,6 +110,7 @@ export default function Products() {
                 <th className="p-5 font-semibold">Category</th>
                 <th className="p-5 font-semibold">Selling Price</th>
                 <th className="p-5 font-semibold">Cost Price</th>
+                <th className="p-5 font-semibold">GST %</th>
                 <th className="p-5 font-semibold">Stock</th>
                 <th className="p-5 font-semibold text-right">Actions</th>
               </tr>
@@ -125,8 +127,9 @@ export default function Products() {
                     <td className="p-5">
                       <span className="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-xs font-semibold">{p.category}</span>
                     </td>
-                    <td className="p-5 text-primary-700 font-bold">${p.price?.toFixed(2)}</td>
-                    <td className="p-5 text-slate-500 font-medium">${p.costPrice?.toFixed(2) || '0.00'}</td>
+                    <td className="p-5 text-primary-700 font-bold">₹{p.price?.toFixed(2)}</td>
+                    <td className="p-5 text-slate-500 font-medium">₹{p.costPrice?.toFixed(2) || '0.00'}</td>
+                    <td className="p-5 text-slate-600 font-medium">{p.gstPercentage || 0}%</td>
                     <td className="p-5">
                       <span className={`px-3 py-1 text-xs font-bold rounded-full flex items-center w-fit gap-1.5 ${p.stockQuantity > 15 ? 'bg-emerald-100 text-emerald-700' : p.stockQuantity > 0 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
                         <div className={`w-1.5 h-1.5 rounded-full ${p.stockQuantity > 15 ? 'bg-emerald-500' : p.stockQuantity > 0 ? 'bg-amber-500' : 'bg-red-500'}`}></div>
@@ -168,17 +171,29 @@ export default function Products() {
               </div>
               <div className="grid grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-1.5">Selling Price ($)</label>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1.5">Selling Price (₹)</label>
                   <input type="number" step="0.01" min="0" placeholder="0.00" className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} required/>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-1.5">Cost Price ($)</label>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1.5">Cost Price (₹)</label>
                   <input type="number" step="0.01" min="0" placeholder="0.00" className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all" value={formData.costPrice} onChange={e => setFormData({...formData, costPrice: e.target.value})} />
                 </div>
               </div>
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Stock Quantity</label>
-                <input type="number" min="0" placeholder="0" className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all" value={formData.stockQuantity} onChange={e => setFormData({...formData, stockQuantity: e.target.value})} required/>
+              <div className="grid grid-cols-2 gap-5">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1.5">Stock Quantity</label>
+                  <input type="number" min="0" placeholder="0" className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all" value={formData.stockQuantity} onChange={e => setFormData({...formData, stockQuantity: e.target.value})} required/>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1.5">GST %</label>
+                  <select className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none transition-all" value={formData.gstPercentage} onChange={e => setFormData({...formData, gstPercentage: e.target.value})}>
+                    <option value="0">0%</option>
+                    <option value="5">5%</option>
+                    <option value="12">12%</option>
+                    <option value="18">18%</option>
+                    <option value="28">28%</option>
+                  </select>
+                </div>
               </div>
             </div>
             
